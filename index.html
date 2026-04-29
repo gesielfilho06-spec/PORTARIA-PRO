@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portaria PRO v8</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg: #f8fafc; --card: #ffffff; --primary: #0f172a;
+            --accent: #10b981; --text: #1e293b; --border: #e2e8f0;
+        }
+        [data-theme="dark"] {
+            --bg: #020617; --card: #1e293b; --primary: #f8fafc;
+            --accent: #34d399; --text: #f1f5f9; --border: #334155;
+        }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 50px; transition: 0.3s; }
+        
+        .header { background: var(--primary); color: var(--bg); padding: 15px; display: flex; justify-content: space-between; align-items: center; font-weight: 800; }
+        .theme-btn { background: var(--accent); color: #000; border: none; padding: 5px 10px; border-radius: 8px; font-size: 10px; cursor: pointer; font-weight: bold; }
+
+        .slim-nav { display: flex; overflow-x: auto; gap: 12px; padding: 15px; background: var(--card); border-bottom: 1px solid var(--border); scrollbar-width: none; }
+        .nav-item { flex: 0 0 75px; text-align: center; cursor: pointer; }
+        .nav-item svg { width: 28px; height: 28px; padding: 10px; background: var(--bg); border-radius: 16px; fill: #64748b; transition: 0.3s; }
+        .nav-item span { font-size: 9px; display: block; margin-top: 5px; font-weight: bold; text-transform: uppercase; }
+        .nav-item.active svg { background: var(--accent); fill: white; }
+        .nav-item.active span { color: var(--accent); }
+
+        .container { padding: 15px; max-width: 700px; margin: auto; }
+        .card { background: var(--card); padding: 20px; border-radius: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border: 1px solid var(--border); margin-bottom: 15px; }
+
+        label { font-size: 10px; font-weight: 800; color: #94a3b8; text-transform: uppercase; display: block; margin-bottom: 4px; }
+        input, select, textarea { width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 12px; font-size: 15px; background: var(--bg); color: var(--text); box-sizing: border-box; margin-bottom: 12px; }
+        
+        .row-3 { display: grid; grid-template-columns: 1.5fr 1fr 1.5fr; gap: 10px; }
+        .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+        .btn { width: 100%; padding: 15px; border: none; border-radius: 14px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn-save { background: var(--accent); color: white; }
+        .btn-csv { background: #6366f1; color: white; margin-top: 10px; }
+        .btn-cancel { background: #ef4444; color: white; margin-top: 10px; font-size: 12px; }
+
+        .reg-card { background: var(--card); padding: 12px; border-radius: 12px; margin-bottom: 8px; border: 1px solid var(--border); border-left: 4px solid var(--accent); cursor: pointer; }
+    </style>
+</head>
+<body data-theme="light">
+
+<div class="header">
+    <span>PORTARIA PRO v8</span>
+    <button class="theme-btn" onclick="toggleTheme()">MUDAR TEMA</button>
+</div>
+
+<div class="slim-nav">
+    <div class="nav-item active" onclick="switchMod('VEÍCULOS', this, 'f1')"><svg viewBox="0 0 24 24"><path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99z"/></svg><span>Veículos</span></div>
+    <div class="nav-item" onclick="switchMod('CAIXAS', this, 'f2')"><svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2z"/></svg><span>Caixas</span></div>
+    <div class="nav-item" onclick="switchMod('ADUBO', this, 'f5')"><svg viewBox="0 0 24 24"><path d="M7 10l5 5 5-5H7z"/></svg><span>Adubo</span></div>
+    <div class="nav-item" onclick="switchMod('ÓLEO', this, 'f4')"><svg viewBox="0 0 24 24"><path d="M12 3L4 9v12h16V9l-8-6z"/></svg><span>Óleo</span></div>
+    <div class="nav-item" onclick="switchMod('RESÍDUOS', this, 'f6')"><svg viewBox="0 0 24 24"><path d="M16 9v10H8V9h8m-1.5-6h-5l-1 1H5v2h14V4h-3.5l-1-1z"/></svg><span>Resíduos</span></div>
+    <div class="nav-item" onclick="showTab('dash', this)"><svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/></svg><span>Painel</span></div>
+</div>
+
+<div class="container">
+    <div id="tab-form">
+        <div class="card">
+            <h3 id="formTitle">Novo Registro</h3>
+            <label>Condutor (Obrigatório) *</label>
+            <input type="text" id="c_nome">
+            
+            <div class="row-3">
+                <div><label>CNH</label><input type="text" id="c_cnh"></div>
+                <div><label>Cat.</label><input type="text" id="c_cat"></div>
+                <div><label>Validade</label><input type="date" id="c_val"></div>
+            </div>
+
+            <div class="row">
+                <div><label>Placa</label><input type="text" id="c_placa"></div>
+                <div><label>Data</label><input type="date" id="c_data"></div>
+            </div>
+
+            <label>Empresa / Origem</label>
+            <input type="text" id="c_emp">
+
+            <div id="extraArea"></div>
+
+            <label>Horários Entrada / Saída</label>
+            <div id="timeRows"></div>
+            <button onclick="addTime()" style="background:none; border:none; color:var(--accent); font-weight:bold; cursor:pointer; font-size:11px; margin-bottom:15px">+ Add Horário</button>
+
+            <button class="btn btn-save" onclick="save()">💾 SALVAR NO SISTEMA</button>
+            <button id="btn-cancel" class="btn btn-cancel" style="display:none" onclick="location.reload()">CANCELAR EDIÇÃO</button>
+        </div>
+    </div>
+
+    <div id="tab-dash" style="display:none">
+        <div class="card"><canvas id="chart" height="150"></canvas></div>
+        <div class="card">
+            <label>Busca Rápida</label>
+            <div class="row">
+                <input type="text" id="f_search" onkeyup="render()" placeholder="Nome ou Placa...">
+                <select id="f_mes" onchange="render()"><option value="">Todos Meses</option><option value="-01-">Janeiro</option><option value="-02-">Fevereiro</option><option value="-03-">Março</option></select>
+            </div>
+            <button class="btn btn-csv" onclick="downloadCSV()">📊 DESCARREGAR RELATÓRIO EXCEL</button>
+            <div id="list" style="margin-top:15px"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let db = JSON.parse(localStorage.getItem('portaria_db_v8')) || [];
+    let curMod = 'f1'; let editId = null;
+
+    window.onload = () => {
+        document.getElementById('c_data').valueAsDate = new Date();
+        if(localStorage.getItem('theme') === 'dark') toggleTheme();
+        addTime();
+    };
+
+    function toggleTheme() {
+        const b = document.body;
+        const isDark = b.getAttribute('data-theme') === 'dark';
+        b.setAttribute('data-theme', isDark ? 'light' : 'dark');
+        localStorage.setItem('theme', isDark ? 'light' : 'dark');
+    }
+
+    function switchMod(title, el, code) {
+        curMod = code; editId = null;
+        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+        if(el) el.classList.add('active');
+        document.getElementById('tab-form').style.display = 'block';
+        document.getElementById('tab-dash').style.display = 'none';
+        document.getElementById('formTitle').innerText = title;
+        
+        let ex = document.getElementById('extraArea'); ex.innerHTML = "";
+        if(code === 'f2') ex.innerHTML = '<label>Tipo da Caixa (Livre)</label><input id="ex1">';
+        if(code === 'f5') ex.innerHTML = '<div class="row"><div><label>Qtd Big Bag</label><input id="ex1"></div><div><label>Destino</label><input id="ex2"></div></div>';
+        if(code === 'f4') ex.innerHTML = '<div class="row"><div><label>Ticket</label><input id="ex1"></div><div><label>Peso</label><input id="ex2"></div></div>';
+        if(code === 'f6') ex.innerHTML = '<div class="row"><div><label>Código</label><input id="ex1"></div><div><label>Material</label><input id="ex2"></div></div>';
+    }
+
+    function showTab(t, el) {
+        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+        el.classList.add('active');
+        document.getElementById('tab-form').style.display = 'none';
+        document.getElementById('tab-dash').style.display = 'block';
+        render(); initChart();
+    }
+
+    function addTime(e="", s="") {
+        const div = document.createElement('div'); div.className = "row";
+        div.innerHTML = `<input type="time" class="he" value="${e}"><input type="time" class="hs" value="${s}">`;
+        document.getElementById('timeRows').appendChild(div);
+    }
+
+    function save() {
+        const nome = document.getElementById('c_nome').value;
+        if(!nome) return alert("ERRO: Nome é obrigatório!");
+        const reg = {
+            id: editId || Date.now(), mod: curMod, nome, 
+            cnh: document.getElementById('c_cnh').value, cat: document.getElementById('c_cat').value,
+            val: document.getElementById('c_val').value, placa: document.getElementById('c_placa').value.toUpperCase(),
+            data: document.getElementById('c_data').value, emp: document.getElementById('c_emp').value,
+            ex1: document.getElementById('ex1')?.value || "", ex2: document.getElementById('ex2')?.value || "",
+            horas: Array.from(document.querySelectorAll('#timeRows .row')).map(r => ({e: r.querySelector('.he').value, s: r.querySelector('.hs').value}))
+        };
+        if(editId) db = db.map(x => x.id === editId ? reg : x); else db.push(reg);
+        localStorage.setItem('portaria_db_v8', JSON.stringify(db));
+        alert("Salvo!"); location.reload();
+    }
+
+    function render() {
+        const s = document.getElementById('f_search').value.toUpperCase();
+        const m = document.getElementById('f_mes').value;
+        const list = document.getElementById('list'); list.innerHTML = "";
+        db.filter(i => (i.nome.toUpperCase().includes(s) || i.placa.includes(s)) && (m === "" || i.data.includes(m)))
+          .sort((a,b) => b.id - a.id).forEach(i => {
+            list.innerHTML += `<div class="reg-card" onclick="edit(${i.id})">
+                <div style="display:flex; justify-content:space-between"><b>${i.placa}</b> <small>${i.data}</small></div>
+                <div style="font-size:12px">${i.nome}</div>
+                <div style="font-size:9px; color:var(--accent)">Clique para Editar</div>
+            </div>`;
+        });
+    }
+
+    function edit(id) {
+        const i = db.find(x => x.id === id); editId = i.id;
+        switchMod(i.mod, null, i.mod);
+        document.getElementById('tab-form').style.display = 'block';
+        document.getElementById('tab-dash').style.display = 'none';
+        document.getElementById('btn-cancel').style.display = 'block';
+        document.getElementById('c_nome').value = i.nome;
+        document.getElementById('c_cnh').value = i.cnh; document.getElementById('c_cat').value = i.cat;
+        document.getElementById('c_val').value = i.val; document.getElementById('c_placa').value = i.placa;
+        document.getElementById('c_data').value = i.data; document.getElementById('c_emp').value = i.emp;
+        if(document.getElementById('ex1')) document.getElementById('ex1').value = i.ex1;
+        if(document.getElementById('ex2')) document.getElementById('ex2').value = i.ex2;
+        document.getElementById('timeRows').innerHTML = ""; i.horas.forEach(h => addTime(h.e, h.s));
+    }
+
+    function downloadCSV() {
+        let c = "\ufeffData;Placa;Condutor;CNH;Categoria;Validade;Empresa;Horas;Extras\n";
+        db.forEach(i => {
+            let h = i.horas.map(x => x.e + "-" + x.s).join("/");
+            c += `${i.data};${i.placa};${i.nome};${i.cnh};${i.cat};${i.val};${i.emp};${h};${i.ex1} ${i.ex2}\n`;
+        });
+        const b = new Blob([c], {type:'text/csv'}); const a = document.createElement('a');
+        a.href=URL.createObjectURL(b); a.download='Portaria_Relatorio.csv'; a.click();
+    }
+
+    function initChart() {
+        const ctx = document.getElementById('chart').getContext('2d');
+        if(window.myChart) window.myChart.destroy();
+        window.myChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Veic', 'Caixa', 'Adubo', 'Oleo', 'Resid'],
+                datasets: [{ data: [db.filter(x=>x.mod=='f1').length, db.filter(x=>x.mod=='f2').length, db.filter(x=>x.mod=='f5').length, db.filter(x=>x.mod=='f4').length, db.filter(x=>x.mod=='f6').length], backgroundColor: '#10b981' }]
+            },
+            options: { plugins: { legend: { display: false } } }
+        });
+    }
+</script>
+</body>
+</html>
